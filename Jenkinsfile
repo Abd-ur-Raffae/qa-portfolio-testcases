@@ -51,10 +51,22 @@ pipeline {
 
     post {
         always {
-            // Built-in artifact archiving (works on all Jenkins environments)
-            archiveArtifacts artifacts: 'playwright-report/**, test-results/**', allowEmptyArchive: true
+            // 1. Allure Report Plugin Integration
+            script {
+                try {
+                    allure includeProperties: false, jdk: '', reportBuildPolicy: 'ALWAYS', results: [[path: 'allure-results']]
+                } catch (Throwable e) {
+                    echo "Notice: Allure Jenkins plugin step skipped or tool not configured in Jenkins."
+                }
+            }
 
-            // Safe HTML Publisher plugin invocation (gracefully fallback if plugin is missing)
+            // 2. Publish native Jenkins JUnit Test Results
+            junit allowEmptyResults: true, testResults: 'results.xml'
+
+            // 3. Archive all test artifacts (Playwright report, Allure raw results, traces, videos, XML results)
+            archiveArtifacts artifacts: 'playwright-report/**, test-results/**, allure-results/**, results.xml', allowEmptyArchive: true
+
+            // 4. Publish interactive Playwright HTML Report (HTML Publisher Plugin)
             script {
                 try {
                     publishHTML(target: [
@@ -63,10 +75,10 @@ pipeline {
                         keepAll: true,
                         reportDir: 'playwright-report',
                         reportFiles: 'index.html',
-                        reportName: 'Playwright Test Report'
+                        reportName: 'Playwright HTML Report'
                     ])
                 } catch (Throwable e) {
-                    echo "Notice: HTML Publisher plugin not installed. Playwright test reports are available in the build artifacts above."
+                    echo "Notice: HTML Publisher plugin step skipped."
                 }
             }
         }
