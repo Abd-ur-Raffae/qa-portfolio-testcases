@@ -1,0 +1,42 @@
+pipeline {
+    agent {
+        docker {
+            // Using official Microsoft Playwright Docker image matching your Playwright version
+            image 'mcr.microsoft.com/playwright:v1.50.0-nobel'
+            args '--ipc=host'
+        }
+    }
+
+    environment {
+        CI = 'true'
+    }
+
+    stages {
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm ci'
+            }
+        }
+
+        stage('Run Playwright Tests') {
+            steps {
+                sh 'npx playwright test'
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'playwright-report/**, test-results/**', allowEmptyArchive: true
+
+            publishHTML(target: [
+                allowMissing: true,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'playwright-report',
+                reportFiles: 'index.html',
+                reportName: 'Playwright Test Report'
+            ])
+        }
+    }
+}
