@@ -28,9 +28,9 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh 'npx playwright install --with-deps'
+                        sh 'npx playwright install chromium --with-deps'
                     } else {
-                        bat 'npx playwright install'
+                        bat 'npx playwright install chromium'
                     }
                 }
             }
