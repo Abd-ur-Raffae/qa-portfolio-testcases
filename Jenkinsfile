@@ -51,10 +51,10 @@ pipeline {
 
     post {
         always {
-            // 1. Allure Report Plugin Integration
+            // 1. Allure Report Plugin Integration with explicit commandline tool name
             script {
                 try {
-                    allure includeProperties: false, jdk: '', reportBuildPolicy: 'ALWAYS', results: [[path: 'allure-results']]
+                    allure commandline: 'Allure', includeProperties: false, jdk: '', reportBuildPolicy: 'ALWAYS', results: [[path: 'allure-results']]
                 } catch (Throwable e) {
                     echo "Notice: Allure Jenkins plugin step skipped or tool not configured in Jenkins."
                 }
@@ -63,8 +63,8 @@ pipeline {
             // 2. Publish native Jenkins JUnit Test Results
             junit allowEmptyResults: true, testResults: 'results.xml'
 
-            // 3. Archive all test artifacts (Playwright report, Allure raw results, traces, videos, XML results)
-            archiveArtifacts artifacts: 'playwright-report/**, test-results/**, allure-results/**, results.xml', allowEmptyArchive: true
+            // 3. Archive all test artifacts (Playwright report, Allure raw results, generated Allure report, traces, videos, XML results)
+            archiveArtifacts artifacts: 'playwright-report/**, test-results/**, allure-results/**, allure-report/**, results.xml', allowEmptyArchive: true
 
             // 4. Publish interactive Playwright HTML Report (HTML Publisher Plugin)
             script {
