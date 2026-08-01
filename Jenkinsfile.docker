@@ -1,8 +1,7 @@
 pipeline {
     agent {
         docker {
-            // Using official Microsoft Playwright Docker image matching your Playwright version
-            image 'mcr.microsoft.com/playwright:v1.50.0-nobel'
+            image 'mcr.microsoft.com/playwright:v1.50.0-jammy'
             args '--ipc=host'
         }
     }
@@ -29,14 +28,20 @@ pipeline {
         always {
             archiveArtifacts artifacts: 'playwright-report/**, test-results/**', allowEmptyArchive: true
 
-            publishHTML(target: [
-                allowMissing: true,
-                alwaysLinkToLastBuild: true,
-                keepAll: true,
-                reportDir: 'playwright-report',
-                reportFiles: 'index.html',
-                reportName: 'Playwright Test Report'
-            ])
+            script {
+                try {
+                    publishHTML(target: [
+                        allowMissing: true,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'playwright-report',
+                        reportFiles: 'index.html',
+                        reportName: 'Playwright Test Report'
+                    ])
+                } catch (Throwable e) {
+                    echo "Notice: HTML Publisher plugin not installed. Playwright test reports are available in the build artifacts above."
+                }
+            }
         }
     }
 }
