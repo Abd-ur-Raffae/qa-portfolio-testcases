@@ -82,5 +82,25 @@ pipeline {
                 }
             }
         }
+
+        success {
+            script {
+                try {
+                    slackSend color: 'good', message: "SUCCESSFUL: Job '${env.JOB_NAME}' [Build #${env.BUILD_NUMBER}] (${env.BUILD_URL})"
+                } catch (Throwable e) {
+                    echo "Notice: Slack notification step failed: ${e.message}"
+                }
+            }
+        }
+
+        failure {
+            script {
+                try {
+                    slackSend color: 'danger', message: "FAILED: Job '${env.JOB_NAME}' [Build #${env.BUILD_NUMBER}] (${env.BUILD_URL})"
+                } catch (Throwable e) {
+                    echo "Notice: Slack notification step failed: ${e.message}"
+                }
+            }
+        }
     }
 }
